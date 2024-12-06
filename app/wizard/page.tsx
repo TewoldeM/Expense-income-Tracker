@@ -14,7 +14,8 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import React from "react";
-async function page() {
+
+async function page({}) {
   const user = await currentUser();
   if (!user) {
     return redirect("/sign-in");

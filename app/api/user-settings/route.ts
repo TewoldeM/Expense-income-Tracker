@@ -3,9 +3,11 @@ import { currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { NextRequest } from "next/server";
+import { createContext, useState } from 'react';
 
 export async function GET(req: NextRequest) {
   const user = await currentUser();
+  
   if (!user) {
     redirect("sign-in");
   }

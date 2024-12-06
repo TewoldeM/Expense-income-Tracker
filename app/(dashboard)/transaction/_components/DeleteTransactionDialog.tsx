@@ -73,10 +73,7 @@ function DeleteTransactionDialog({ open, setOpen, transactionId }: Props) {
             }}
           >
             Continue
-            {/* 
-            git config --global user.name "tewolde marie"
-git config --global user.email "tewoldemarie6@gmail.com"
-            */}
+    
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
