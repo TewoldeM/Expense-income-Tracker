@@ -48,7 +48,6 @@ const CategoriesStatus = ({ from, to, userSettings }: Props) => {
     </div>
   );
 };
-
 export default CategoriesStatus;
 
 function Categoriescard({

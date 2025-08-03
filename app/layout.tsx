@@ -1,16 +1,10 @@
-import {
-  ClerkProvider,
-  SignInButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from "@clerk/nextjs";
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Logo from "@/components/custom/Logo";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -25,10 +19,20 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en" className="dark" style={{ colorScheme: "dark" }}>
+      <html
+        lang="en"
+        className="light"
+        style={{ colorScheme: "light" }}
+        suppressHydrationWarning
+      >
         <body className={inter.className}>
-          <Toaster  richColors position="bottom-right"  />
-          <ThemeProvider attribute="class" defaultTheme="system">
+          <Toaster richColors position="bottom-right" />
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light" // Force light theme for SSR
+            enableSystem
+            disableTransitionOnChange
+          >
             {children}
           </ThemeProvider>
         </body>

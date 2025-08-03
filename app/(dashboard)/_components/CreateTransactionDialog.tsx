@@ -1,8 +1,28 @@
-"use client";
-import { ReactNode } from "react";
-import React from "react";
+"use client"
+import Picker from "@emoji-mart/react";
+import data from "@emoji-mart/data";
+import { Button } from "@/components/ui/button";
+import { CircleOff, Loader2, PlusSquare } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { TransactionType } from "@/lib/TransactionType";
+import React, { ReactNode } from "react";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  CreateCategorySchema,
+  CreateCategorySchemaType,
+} from "@/schema/categories";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -10,228 +30,181 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
 } from "@/components/ui/form";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
-
-import {
-  CreateTransactionSchema,
-  CreateTransactionSchemaType,
-} from "@/schema/transaction";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { TransactionType } from "@/lib/TransactionType";
-import CategoryPicker from "./categoryPicker";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { CalendarIcon, Loader2 } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CreateTransaction } from "../_actions/transactions";
+import { Category } from "@prisma/client";
+import { CreateCategory } from "../_actions/category";
 import { toast } from "sonner";
-import { DateToUTCDate } from "@/lib/helpers";
+import { useTheme } from "next-themes";
+
 interface Props {
-  trigger: ReactNode;
   type: TransactionType;
+  successCallback: (category: Category) => void;
+  trigger?: ReactNode;
 }
 
-const CreateTransactionDialog = ({ trigger, type }: Props) => {
-  const form = useForm<CreateTransactionSchemaType>({
-    resolver: zodResolver(CreateTransactionSchema),
+const CreateCategoryDilog = ({ type, successCallback, trigger }: Props) => {
+  const [open, setOpen] = React.useState(false);
+  const form = useForm<CreateCategorySchemaType>({
+    resolver: zodResolver(CreateCategorySchema),
     defaultValues: {
       type,
-      date: new Date(),
     },
   });
-  const [open, setOpen] = React.useState(false);
-  const [popoverOpen, setPopoverOpen] = React.useState(false);
-  const handlePopoverOpenChange = (open: boolean) => {
-    setPopoverOpen(open);
-  };
-  const handleCategoryChnage = React.useCallback(
-    (value: string) => {
-      form.setValue("category", value);
-    },
-    [form]
-  );
 
-  const QueryClient = useQueryClient();
+  const queryClient = useQueryClient(); // Fixed variable name (QueryClient -> queryClient)
+  const { resolvedTheme } = useTheme(); // Use resolvedTheme directly
   const { mutate, isPending } = useMutation({
-    mutationFn: CreateTransaction,
-    onSuccess: () => {
-      toast.success(`Transaction created successfully 🎉`, {
-        id: "create-transaction",
+    mutationFn: CreateCategory,
+    onSuccess: async (data: Category) => {
+      form.reset({
+        name: "",
+        icon: "",
+        type,
       });
 
-      form.reset({
-        type,
-        date: new Date(),
-        description: "",
-        amount: 0,
-        category: undefined,
+      toast.success(`Category ${data.name} created successfully 🎉`, {
+        id: "create-category",
       });
-      QueryClient.invalidateQueries({ queryKey: ["overview"] });
-      setOpen((prev) => !prev);
+      successCallback(data);
+      await queryClient.invalidateQueries({
+        queryKey: ["categories"],
+      });
+
+      setOpen(false);
+    },
+    onError: () => {
+      toast.error("Something went wrong", {
+        id: "create-category-error",
+      });
     },
   });
-  const onsubmit = React.useCallback(
-    (values: CreateTransactionSchemaType) => {
-      toast.loading(
-        `Creating tarnsaction with  ${values.category} category...`,
-        {
-          id: "create-transaction",
-        }
-      );
 
-      mutate({ ...values, date: DateToUTCDate(values.date) });
+  const onSubmit = React.useCallback(
+    (values: CreateCategorySchemaType) => {
+      toast.loading("Creating category...", {
+        id: "create-category",
+      });
+      mutate(values);
     },
     [mutate]
   );
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogTrigger asChild>
+        {trigger ? (
+          trigger
+        ) : (
+          <Button
+            variant="ghost"
+            className="flex border-separate items-center justify-start rounded-none border-b px-3 py-3 text-muted-foreground"
+          >
+            <PlusSquare className="mr-2 h-4 w-4" />
+            Create new
+          </Button>
+        )}
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            Create a new
+            Create
             <span
-              className={`m-1 ${
-                type === "income" ? "text-emerald-500" : "text-rose-500"
-              }`}
+              className={cn(
+                "m-1",
+                type === "income" ? "text-emerald-500" : "text-red-500"
+              )}
             >
               {type}
             </span>
-            transaction
+            Category
           </DialogTitle>
+          <DialogDescription>
+            Categories are used to group your transactions
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form className="space-y-4" onSubmit={form.handleSubmit(onsubmit)}>
+          <form className="space-y-8" onSubmit={form.handleSubmit(onSubmit)}>
             <FormField
               control={form.control}
-              name="description"
+              name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input defaultValue={""} {...field} />
+                    <Input placeholder="Category" {...field} />
                   </FormControl>
                   <FormDescription>
-                    Transaction desciption (optional)
+                    This is how your category will appear in the app
                   </FormDescription>
                 </FormItem>
               )}
             />
             <FormField
               control={form.control}
-              name="amount"
+              name="icon"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Amount</FormLabel>
-                  <FormControl>
-                    <Input defaultValue={0} {...field} type="number" />
-                  </FormControl>
-                  <FormDescription>
-                    Transaction Amount (Required)
-                  </FormDescription>
-                </FormItem>
-              )}
-            />
-
-            <div className="flex items-center gap-2">
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem className="">
-                    <FormLabel>Category</FormLabel>
-                    <FormControl>
-                      <CategoryPicker
-                        type={type}
-                        onChange={handleCategoryChnage}
-                      />
-                    </FormControl>
-                    <FormDescription className="flex items-center justify-center">
-                      Selecet Category
-                    </FormDescription>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Transaction date</FormLabel>
-                    <Popover>
-                      <PopoverTrigger className="flex items-center gap-2">
-                        <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-[240px] pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                          onClick={() => setPopoverOpen(true)} // Open on button click
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={(value) => {
-                            field.onChange(value);
-                            setPopoverOpen(false); // Optionally close after selection
+                  <FormLabel>Icon</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="h-[100px] w-full">
+                        {form.watch("icon") ? (
+                          <div className="flex flex-col items-center gap-2">
+                            <span className="text-5xl" role="img">
+                              {field.value}
+                            </span>
+                            <p className="text-xs text-muted-foreground">
+                              Click to Change
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center gap-2">
+                            <CircleOff className="h-[48px] w-[48px]" />
+                            <p className="text-xs text-muted-foreground">
+                              Click to Select
+                            </p>
+                          </div>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full">
+                      <FormControl>
+                        <Picker
+                          data={data}
+                          onEmojiSelect={(emoji: { native: string }) => {
+                            field.onChange(emoji.native);
                           }}
-                          initialFocus
+                          theme={resolvedTheme}
                         />
-                      </PopoverContent>
-                    </Popover>
-                    <FormDescription className="flex items-center justify-center">
-                      Selecte Date
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                      </FormControl>
+                    </PopoverContent>
+                  </Popover>
+                  <FormDescription>You can pick an icon</FormDescription>
+                </FormItem>
+              )}
+            />
           </form>
         </Form>
         <DialogFooter>
           <DialogClose asChild>
             <Button
               type="button"
-              variant={"secondary"}
+              variant="secondary"
               onClick={() => {
                 form.reset();
               }}
             >
-              cancel
+              Cancel
             </Button>
           </DialogClose>
-          <Button onClick={form.handleSubmit(onsubmit)}>
-            {!isPending && "Create"}
-            {isPending && <Loader2 className="animate-spin" />}
+          <Button onClick={form.handleSubmit(onSubmit)} disabled={isPending}>
+            {isPending ? <Loader2 className="animate-spin" /> : "Create"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -239,4 +212,4 @@ const CreateTransactionDialog = ({ trigger, type }: Props) => {
   );
 };
 
-export default CreateTransactionDialog;
+export default CreateCategoryDilog;

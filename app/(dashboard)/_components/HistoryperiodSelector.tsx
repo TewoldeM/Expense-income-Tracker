@@ -17,12 +17,7 @@ interface Props {
   timeframe: Timeframe;
   setTimeframe: (timeframe: Timeframe) => void;
 }
-function HistoryperiodSelector({
-  period,
-  setPeriod,
-  timeframe,
-  setTimeframe,
-}: Props) {
+function HistoryperiodSelector({period,setPeriod,timeframe,setTimeframe,}: Props) {
   const historyperiods = useQuery<GetHistoryPeriodResponseType>({
     queryKey: ["overview", "history", "period"],
     queryFn: () => fetch(`/api/history-period`).then((res) => res.json()),
@@ -60,9 +55,7 @@ function HistoryperiodSelector({
     </div>
   );
 }
-
 export default HistoryperiodSelector;
-
 function YearSelector({
   period,
   setPeriod,

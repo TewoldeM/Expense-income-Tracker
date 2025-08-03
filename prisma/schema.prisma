@@ -6,10 +6,10 @@
 generator client {
   provider = "prisma-client-js"
 }
+
 datasource db {
   provider = "postgresql"
-  url      = env("POSTGRES_PRISMA_URL")
-  directUrl = env("POSTGRES_URL_NON_POOLING")
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -17,7 +17,7 @@ model User {
   email               String    @unique
   password            String
   createdAt           DateTime  @default(now())
-  failedLoginAttempts Int       @default(0)
+
   isLocked            Boolean   @default(false)
   lockUntil           DateTime?
 }
@@ -40,13 +40,11 @@ model Transaction {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
-
   amount      Float
   description String
   date        DateTime
   userId      String
   type        String   @default("income")
-
   category     String
   categoryIcon String
 }
@@ -58,7 +56,6 @@ model MonthHistory {
   year    Int
   income  Float
   expense Float
-
   @@unique([day, month, year, userId])
 }
 model YearHistory {
@@ -67,6 +64,5 @@ model YearHistory {
   year    Int
   income  Float
   expense Float
-
   @@unique([month, year, userId])
 }

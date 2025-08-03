@@ -38,8 +38,7 @@ const History = ({ userSettings }: { userSettings: UserSetting }) => {
         `api/history-data?timeframe=${timeframe}&year=${period.year}&month=${period.month}`
       ).then((res) => res.json()),
   });
-  const dataAvailable =
-    Array.isArray(historyDataQuery.data) && historyDataQuery.data.length > 0;
+  const dataAvailable =Array.isArray(historyDataQuery.data) && historyDataQuery.data.length > 0;
   return (
     <div className="container">
       <h2 className="mt-12 text-3xl font-bold">History</h2>
@@ -203,7 +202,6 @@ export default History;
 //? The active and payload props are built-in props that are provided by the Recharts library.
 // When you use the Tooltip component in Recharts, it automatically passes these props to the custom tooltip component.
 //When the CustomTooltip function is called, it receives the payload prop, which is an array of objects. The function then accesses the first object in the array using payload[0], and then accesses the payload property of that object using payload[0].payload.
-
 //? The payload property of the object is an object that contains the actual data for the tooltip.
 //  In this case, the data is an object with two properties: expense and income.
 function CustomTooltip({ active, payload, formatter }: any) {

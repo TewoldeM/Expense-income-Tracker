@@ -49,14 +49,16 @@ import { useTheme } from "next-themes";
 interface Props {
   type: TransactionType;
   successCallback: (category: Category) => void;
-  trigger?:ReactNode
+  trigger?: ReactNode;
 }
 
-const CreateCategoryDilog = ({ type, successCallback,trigger }: Props) => {
+const CreateCategoryDilog = ({ type, successCallback, trigger }: Props) => {
   const [open, setOpen] = React.useState(false);
   const form = useForm<CreateCategorySchemaType>({
     resolver: zodResolver(CreateCategorySchema),
     defaultValues: {
+      name: "",
+      icon: "",
       type,
     },
   });
@@ -107,13 +109,17 @@ const CreateCategoryDilog = ({ type, successCallback,trigger }: Props) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-       {trigger? trigger:( <Button
-          variant={"ghost"}
-          className="flex border-separate items-center justify-start rounded-none border-b px-3 py-3 text-muted-foreground"
-        >
-          <PlusSquare className="mr-2 h-4 w-4" />
-          Create new
-        </Button>)}
+        {trigger ? (
+          trigger
+        ) : (
+          <Button
+            variant={"ghost"}
+            className="flex border-separate items-center justify-start rounded-none border-b px-3 py-3 text-muted-foreground"
+          >
+            <PlusSquare className="mr-2 h-4 w-4" />
+            Create new
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -163,7 +169,7 @@ const CreateCategoryDilog = ({ type, successCallback,trigger }: Props) => {
                           variant={"outline"}
                           className="h-[100px] w-full"
                         >
-                          {form.watch("icon") ? (
+                          {field.value ? ( // Changed from form.watch("icon") to field.value
                             <div className="flex flex-col items-center gap-2">
                               <span className="text-5xl" role="img">
                                 {field.value}
@@ -185,8 +191,8 @@ const CreateCategoryDilog = ({ type, successCallback,trigger }: Props) => {
                       <PopoverContent className="w-full">
                         <Picker
                           data={data}
-                          onEmojiSelect={(emoji: { native: string }) => {
-                            field.onChange(emoji.native);
+                          onEmojiSelect={(emoji: { native?: string }) => {
+                            field.onChange(emoji.native ?? "");
                           }}
                           theme={theme.resolvedTheme}
                         />
@@ -214,6 +220,7 @@ const CreateCategoryDilog = ({ type, successCallback,trigger }: Props) => {
           <Button onClick={form.handleSubmit(onSubmit)}>
             {!isPending && "Create"}
             {isPending && <Loader2 className="animate-spin" />}
+            on{" "}
           </Button>
         </DialogFooter>
       </DialogContent>

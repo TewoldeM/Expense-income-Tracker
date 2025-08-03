@@ -44,11 +44,7 @@ return Response.json(data, { status: 200});
 export type GetHistoryDateResponseType = Awaited<
   ReturnType<typeof getHistoryData>
 >;
-async function getHistoryData(
-  userId: string,
-  timeframe: Timeframe,
-  period: Period
-) {
+async function getHistoryData(userId: string,timeframe: Timeframe,period: Period) {
   switch (timeframe) {
     case "year":
       return await getYearHistoryData(userId, period.year);

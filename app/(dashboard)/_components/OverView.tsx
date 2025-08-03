@@ -8,24 +8,12 @@ import { toast } from "sonner";
 import Statuscards from "./StatusCard";
 import Categories from "./CategoriesStatus";
 import CategoriesStatus from "./CategoriesStatus";
-
 const OverView = ({ usersetings }: { usersetings: UserSetting }) => {
   const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
     from: startOfMonth(new Date()),
     to: new Date(),
   });
-//  ? Initial State
-// The initial state is set to an object with the following properties:
-// from: The first day of the current month, obtained using the startOfMonth function from the date-fns library.
-// to: The current date, obtained using the new Date() constructor.
-//?startOfMonth Function
-// The startOfMonth function from the date-fns library returns the first day of the month for a given date.
-// ?new Date() Constructor
-// The new Date() constructor returns the current date and time.
 
-//? What is the range?
-//The range is the period of time between the from date and the to date. 
-//In this case, the range is the entire month, from the first day of the month to the current date.
   return (
     <>
       <div className="container flex flex-wrap items-end justify-between gap-2 py-6">
@@ -50,11 +38,6 @@ const OverView = ({ usersetings }: { usersetings: UserSetting }) => {
       </div>
 
       <div className="container flex w-full flex-col gap-0">
-        <Statuscards
-          from={dateRange.from}
-          to={dateRange.to}
-          userSettings={usersetings}
-        />
         <CategoriesStatus
           from={dateRange.from}
           to={dateRange.to}
@@ -66,3 +49,22 @@ const OverView = ({ usersetings }: { usersetings: UserSetting }) => {
 };
 
 export default OverView;
+{
+  /* <Statuscards
+          from={dateRange.from}
+          to={dateRange.to}
+          userSettings={usersetings}
+        /> */
+}
+//  ? Initial State
+// The initial state is set to an object with the following properties:
+// from: The first day of the current month, obtained using the startOfMonth function from the date-fns library.
+// to: The current date, obtained using the new Date() constructor.
+//?startOfMonth Function
+// The startOfMonth function from the date-fns library returns the first day of the month for a given date.
+// ?new Date() Constructor
+// The new Date() constructor returns the current date and time.
+
+//? What is the range?
+//The range is the period of time between the from date and the to date.
+//In this case, the range is the entire month, from the first day of the month to the current date.
