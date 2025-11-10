@@ -1,5 +1,4 @@
 "use client";
-
 import { CurrencyComboBox } from "@/components/custom/CurrencyCombox";
 import SkeletonWrapper from "@/components/SkeletonWrapper";
 import {
@@ -18,7 +17,6 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { Category } from "@prisma/client";
-import { Deletecategory } from "../_actions/category";
 import DeletecategoryDialog from "../Deletecategory";
 
 const page = () => {

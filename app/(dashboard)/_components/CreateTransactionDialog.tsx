@@ -1,215 +1,131 @@
-"use client"
-import Picker from "@emoji-mart/react";
-import data from "@emoji-mart/data";
+"use client";
+
+import React, { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { CircleOff, Loader2, PlusSquare } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { TransactionType } from "@/lib/TransactionType";
-import React, { ReactNode } from "react";
-import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  CreateCategorySchema,
-  CreateCategorySchemaType,
-} from "@/schema/categories";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-} from "@/components/ui/form";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Category } from "@prisma/client";
-import { CreateCategory } from "../_actions/category";
 import { toast } from "sonner";
-import { useTheme } from "next-themes";
+import CreateCategoryDilog from "./CreateCategoryDilog"; // your client dialog
+import { TransactionType } from "@/lib/TransactionType";
+import CategoryPicker from "./categoryPicker";
 
+// If you have a hook/mutation to create transaction, import it and replace placeholder.
 interface Props {
+  trigger: React.ReactNode;
   type: TransactionType;
-  successCallback: (category: Category) => void;
-  trigger?: ReactNode;
 }
 
-const CreateCategoryDilog = ({ type, successCallback, trigger }: Props) => {
-  const [open, setOpen] = React.useState(false);
-  const form = useForm<CreateCategorySchemaType>({
-    resolver: zodResolver(CreateCategorySchema),
-    defaultValues: {
-      type,
-    },
-  });
+export default function CreateTransactionDialog({ trigger, type }: Props) {
+  const [open, setOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
-  const queryClient = useQueryClient(); // Fixed variable name (QueryClient -> queryClient)
-  const { resolvedTheme } = useTheme(); // Use resolvedTheme directly
-  const { mutate, isPending } = useMutation({
-    mutationFn: CreateCategory,
-    onSuccess: async (data: Category) => {
-      form.reset({
-        name: "",
-        icon: "",
-        type,
-      });
+  // called when CategoryPicker changes selection
+  const onCategoryChange = useCallback((value: string) => {
+    setSelectedCategory(value);
+  }, []);
 
-      toast.success(`Category ${data.name} created successfully 🎉`, {
-        id: "create-category",
-      });
-      successCallback(data);
-      await queryClient.invalidateQueries({
-        queryKey: ["categories"],
-      });
+  // called when CreateCategoryDilog creates a new category
+  const onCategoryCreated = useCallback((category: any) => {
+    // category is the created Category object from your mutation
+    // Update local selection and show toast
+    setSelectedCategory(category.name);
+    toast.success(`Category "${category.name}" created`);
+    // Optionally close any UI or re-open picker, etc.
+  }, []);
 
-      setOpen(false);
-    },
-    onError: () => {
-      toast.error("Something went wrong", {
-        id: "create-category-error",
-      });
-    },
-  });
+  // Replace this with real mutation (fetch/axios/react-query mutation) that creates transaction
+  const createTransaction = useCallback(async () => {
+    if (!selectedCategory) {
+      toast.error("Pick a category first");
+      return;
+    }
 
-  const onSubmit = React.useCallback(
-    (values: CreateCategorySchemaType) => {
-      toast.loading("Creating category...", {
-        id: "create-category",
-      });
-      mutate(values);
-    },
-    [mutate]
-  );
+    try {
+      setIsCreating(true);
+
+      // Example placeholder: call your API to create transaction
+      // const res = await fetch("/api/transactions", { method: "POST", body: JSON.stringify({ type, category: selectedCategory }) })
+      // const data = await res.json()
+
+      // Fake delay for UX:
+      await new Promise((r) => setTimeout(r, 600));
+
+      toast.success(`${type} created in category "${selectedCategory}"`);
+      console.log("Created transaction:", { type, category: selectedCategory });
+
+      setOpen(false); // close dialog after success
+      setSelectedCategory(null); // reset selection if desired
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to create transaction");
+    } finally {
+      setIsCreating(false);
+    }
+  }, [selectedCategory, type]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger ? (
-          trigger
-        ) : (
-          <Button
-            variant="ghost"
-            className="flex border-separate items-center justify-start rounded-none border-b px-3 py-3 text-muted-foreground"
-          >
-            <PlusSquare className="mr-2 h-4 w-4" />
-            Create new
-          </Button>
-        )}
-      </DialogTrigger>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            Create
-            <span
-              className={cn(
-                "m-1",
-                type === "income" ? "text-emerald-500" : "text-red-500"
-              )}
-            >
-              {type}
-            </span>
-            Category
-          </DialogTitle>
-          <DialogDescription>
-            Categories are used to group your transactions
-          </DialogDescription>
+          <DialogTitle>Create {type} Transaction</DialogTitle>
         </DialogHeader>
-        <Form {...form}>
-          <form className="space-y-8" onSubmit={form.handleSubmit(onSubmit)}>
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Category" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    This is how your category will appear in the app
-                  </FormDescription>
-                </FormItem>
-              )}
+
+        <div className="space-y-4">
+          {/* Category picker - updates selectedCategory on change */}
+          <div>
+            <p className="mb-2 text-sm text-muted-foreground">
+              Select category
+            </p>
+            <CategoryPicker type={type} onChange={onCategoryChange} />
+            {selectedCategory && (
+              <p className="mt-2 text-sm">
+                Selected: <strong>{selectedCategory}</strong>
+              </p>
+            )}
+          </div>
+
+          {/* Create new category dialog - pass onCategoryCreated as a client->client callback */}
+          <div>
+            <p className="mb-2 text-sm text-muted-foreground">
+              Or create a new category
+            </p>
+            <CreateCategoryDilog
+              type={type}
+              // This is client -> client. Allowed.
+              successCallback={onCategoryCreated}
+              trigger={
+                <Button variant="ghost" className="p-2">
+                  + Create new
+                </Button>
+              }
             />
-            <FormField
-              control={form.control}
-              name="icon"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Icon</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="h-[100px] w-full">
-                        {form.watch("icon") ? (
-                          <div className="flex flex-col items-center gap-2">
-                            <span className="text-5xl" role="img">
-                              {field.value}
-                            </span>
-                            <p className="text-xs text-muted-foreground">
-                              Click to Change
-                            </p>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col items-center gap-2">
-                            <CircleOff className="h-[48px] w-[48px]" />
-                            <p className="text-xs text-muted-foreground">
-                              Click to Select
-                            </p>
-                          </div>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full">
-                      <FormControl>
-                        <Picker
-                          data={data}
-                          onEmojiSelect={(emoji: { native: string }) => {
-                            field.onChange(emoji.native);
-                          }}
-                          theme={resolvedTheme}
-                        />
-                      </FormControl>
-                    </PopoverContent>
-                  </Popover>
-                  <FormDescription>You can pick an icon</FormDescription>
-                </FormItem>
-              )}
-            />
-          </form>
-        </Form>
-        <DialogFooter>
-          <DialogClose asChild>
+          </div>
+
+          {/* Buttons */}
+          <div className="flex items-center justify-end gap-2 pt-4">
             <Button
-              type="button"
               variant="secondary"
               onClick={() => {
-                form.reset();
+                setSelectedCategory(null);
+                setOpen(false);
               }}
             >
               Cancel
             </Button>
-          </DialogClose>
-          <Button onClick={form.handleSubmit(onSubmit)} disabled={isPending}>
-            {isPending ? <Loader2 className="animate-spin" /> : "Create"}
-          </Button>
-        </DialogFooter>
+            <Button onClick={createTransaction} disabled={isCreating}>
+              {isCreating ? "Creating..." : "Create"}
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
-};
-
-export default CreateCategoryDilog;
+}

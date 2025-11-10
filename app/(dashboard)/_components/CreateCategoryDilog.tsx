@@ -38,7 +38,6 @@ import {
 } from "@/components/ui/popover";
 import {
   useMutation,
-  QueryClient,
   useQueryClient,
 } from "@tanstack/react-query";
 import { Category } from "@prisma/client";

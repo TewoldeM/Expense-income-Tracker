@@ -1,3 +1,4 @@
+"use client"
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -16,7 +17,6 @@ import React from "react";
 import CreateCategoryDilog from "./CreateCategoryDilog";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CreateCategorySchemaType } from "@/schema/categories";
 
 interface Props {
   type: TransactionType;
