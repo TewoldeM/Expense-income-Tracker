@@ -11,7 +11,9 @@ function SkeletonWrapper({
   isLoading: boolean;
   fullWidth?: boolean;
 }) {
-  if (!isLoading) return children;
+if (!isLoading) {
+  return <>{children}</>;
+}
 
   return (
     <div>
