@@ -6,7 +6,6 @@ import React, {
   useState,
   useEffect,
   useRef,
-  JSX,
   useCallback,
 } from "react";
 import { Button } from "./button";
