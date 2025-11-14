@@ -2,16 +2,14 @@ import React, { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "./ui/skeleton";
 
-function SkeletonWrapper({
-  children,
-  isLoading,
-  fullWidth,
-}: {
+function SkeletonWrapper({children,isLoading,fullWidth,}: {
   children: ReactNode;
   isLoading: boolean;
   fullWidth?: boolean;
 }) {
-  if (!isLoading) return children;
+if (!isLoading) {
+  return <>{children}</>; // ✅ always valid JSX
+}
 
   return (
     <div>
