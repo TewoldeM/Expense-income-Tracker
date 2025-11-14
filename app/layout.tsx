@@ -1,3 +1,5 @@
+"use client";
+
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -29,7 +31,7 @@ export default function RootLayout({
           <Toaster richColors position="bottom-right" />
           <ThemeProvider
             attribute="class"
-            defaultTheme="light" // Force light theme for SSR
+            defaultTheme="light"
             enableSystem
             disableTransitionOnChange
           >
