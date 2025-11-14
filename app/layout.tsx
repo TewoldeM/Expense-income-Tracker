@@ -1,11 +1,9 @@
-"use client";
-
-import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
+import ClerkProviderWrapper from "@/components/ClerkProviderWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,29 +14,27 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <ClerkProvider>
-      <html
-        lang="en"
-        className="light"
-        style={{ colorScheme: "light" }}
-        suppressHydrationWarning
-      >
-        <body className={inter.className}>
-          <Toaster richColors position="bottom-right" />
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="light"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-          </ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html
+      lang="en"
+      className="light"
+      style={{ colorScheme: "light" }}
+      suppressHydrationWarning
+    >
+      <body className={inter.className}>
+        <Toaster richColors position="bottom-right" />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ClerkProviderWrapper>{children}</ClerkProviderWrapper>
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }
